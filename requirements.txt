@@ -1,0 +1,9 @@
+flask
+flask_limiter
+flask-wtf
+flask-login
+flask-talisman
+requests
+apscheduler
+PyJWT
+gunicorn

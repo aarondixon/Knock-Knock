@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Admin Panel</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1p5.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5pt"></script>
+    <script src="{{ url_for('static', filename='timezone.js') }}"></script>
+</head>
+<body class="bg-light" data-csrf-token="{{ csrf_token() }}">
+<div class="container py-5">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <img src="{{ url_for('static', filename='logo.png') }}" height="120" />
+        <div class="d-flex">
+            <form method="GET" action="/"><button type="submit" class="btn btn-secondary me-2">Back</button></form>
+            <form method="GET" action="/admin-logout"><button type="submit" class="btn btn-danger">Logout</button></form>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title">Admin Panel</h2>
+            <p></p>
+            <table id="adminTable" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>IP Address</th>
+                        <th>Expiration</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for email, ip, exp in entries %}
+                    <tr>
+                        <td>{{ email }}</td>
+                        <td>{{ ip }}</td>
+                        <td>{{ exp | localtime }}</td>
+                        <td>
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <form method="POST" action="/extend" class="d-flex align-items-center gap-1">
+                                    {{ extend_form.csrf_token }}
+                                    {{ extend_form.ip(value=ip) }}
+                                    {{ extend_form.duration(id="duration", class="form-select form-select-sm d-inline w-auto") }}
+                                    <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-clock"></i></button>
+                                </form>
+                                <form method="POST" action="/revoke" class="ms-2">
+                                    {{ revoke_form.csrf_token }}
+                                    {{ revoke_form.ip(value=ip) }}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                </form>                                
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='alerts.js') }}"></script>
+<script src="{{ url_for('static', filename='table.js') }}"></script>
+</body>
+</html>
