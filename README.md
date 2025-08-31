@@ -1,4 +1,5 @@
-![Knock-Knock Logo](static/logo-square.png)
+<p align="center"><img src="static/logo-square.png" alt="Knock-Knock Logo" width="350"/></p>
+
 # Knock-Knock
 
 **Knock-Knock** is a self-service web portal for managing IP allow lists via router APIs. It provides a secure and user-friendly interface for users to request temporary access and for administrators to manage access entries.
