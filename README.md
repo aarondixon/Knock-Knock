@@ -2,6 +2,8 @@
 # Knock-Knock
 
 **Knock-Knock** is a self-service web portal for managing IP allow lists via router APIs. It provides a secure and user-friendly interface for users to request temporary access and for administrators to manage access entries.
+It is designed to sit behind a Cloudflare Zero-Trust Access application with a policy that allows specified email addresses access. This controls exactly who can use the self-service portal to add their IP to the allow list.
+There is currently only support for Unifi routers, but templated for additional models.
 
 ---
 
