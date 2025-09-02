@@ -24,6 +24,7 @@ import logging
 import jwt
 import sqlite3
 import requests
+import ipaddress
 from requests.models import Response
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -301,6 +302,7 @@ def index():
     """
     email = request.headers.get('Cf-Access-Authenticated-User-Email', 'test@example.com')
     ip = request.headers.get('Cf-Connecting-IP', request.remote_addr)
+    is_ipv6 = ipaddress.ip_address(ip).version == 6
 
     form = KnockForm()
     admin_form = AdminLoginForm()
@@ -333,7 +335,7 @@ def index():
             flash("Failed to add IP to allow list. Please try again or contact support.", "danger")
 
     user_ips = get_user_ips(email)
-    return render_template('index.html', email=email, ip=ip, user_ips=user_ips, form=form, admin_form=admin_form, title=TITLE)
+    return render_template('index.html', email=email, ip=ip, user_ips=user_ips, form=form, admin_form=admin_form, is_ipv6=is_ipv6, title=TITLE)
 
 @app.route('/admin')
 @login_required
