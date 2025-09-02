@@ -19,6 +19,15 @@ There is currently only support for Unifi routers, but templated for additional 
 
 ---
 
+## 🖼️ Screenshots
+### User Panel
+<img src="docs/assets/User Interface-v0.2.png" alt="Screenshot of UI" />
+
+### Admin Panel
+<img src="docs/assets/Admin Panel-v0.2.png" alt="Screenshot of Admin UI" />
+
+---
+
 ## 🛡️ Cloudflare Access Integration
 Knock-Knock is designed to be placed behind a **Cloudflare Access** rule that filters users by email address. This ensures that only authorized users can access the landing page and request IP access.
 
