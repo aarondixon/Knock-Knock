@@ -1,5 +1,5 @@
 window.setTimeout(function() {
-    const alerts = document.querySelectorAll('.alert');
+    const alerts = document.querySelectorAll('.alert:not(.alert-static');
     alerts.forEach(function(alert) {
     alert.classList.add('fade');
     alert.classList.remove('show');
