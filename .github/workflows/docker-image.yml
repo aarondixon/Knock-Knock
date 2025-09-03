@@ -21,10 +21,10 @@ jobs:
 
       - name: Build Docker Image
         run: | 
-          docker build -t ghcr.io/${{ github.repository | toLower }}/knock-knock:${{ github.event.release.tag_name }} \
-                       -t ghcr.io/${{ github.repository | toLower }}/knock-knock:latest .
+          docker build -t ghcr.io/${{ github.repository }}/knock-knock:${{ github.event.release.tag_name }} \
+                       -t ghcr.io/${{ github.repository }}/knock-knock:latest .
 
       - name: Push Docker Image
         run: | 
-          docker push ghcr.io/${{ github.repository | toLower }}/knock-knock:${{ github.event.release.tag_name }}
-          docker push ghcr.io/${{ github.repository | toLower }}/knock-knock:latest
+          docker push ghcr.io/${{ github.repository }}/knock-knock:${{ github.event.release.tag_name }}
+          docker push ghcr.io/${{ github.repository }}/knock-knock:latest
