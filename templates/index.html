@@ -38,11 +38,14 @@
         <div class="card-body">
             <h2 class="card-title">Welcome {{ email }}</h2>
             <p class="card-text">Your IP: <strong>{{ ip }}</strong></p>
+            {% if is_ipv6 %}
+            <p class="card-text alert alert-info alert-static">Your IP is IPv6, which is not supported for access. Please connect using IPv4.</p>
+            {% endif %}
             <form method="POST" class="mb-4">
                 {{ form.csrf_token }}
                 <label for="duration" class="form-label">Select Expiration:</label>
-                {{ form.duration(class="form-select mb-3") }}
-                <button type="submit" class="btn btn-primary mt-2"><i class="bi bi-door-open-fill"></i>&nbsp;Knock Knock!</button>
+                {{ form.duration(class="form-select mb-3", disabled=is_ipv6) }}
+                <button type="submit" class="btn btn-primary mt-2" {% if is_ipv6 %}disabled{% endif %}><i class="bi bi-door-open-fill"></i>&nbsp;Knock Knock!</button>
             </form>
             <h5>Your Approved IPs:</h5>
             <ul class="list-group">
