@@ -8,13 +8,12 @@ class AdminUser(UserMixin):
         self.id = id
 
 class KnockForm(FlaskForm):
-    duration = SelectField('Select Expiration', choices=[
-        ('1h', '1 Hour'),
-        ('1d', '1 Day'),
-        ('1w', '1 Week'),
-        ('1m', '1 Month')
-    ], validators=[DataRequired()])
+    duration = SelectField('Select Expiration', validators=[DataRequired()])
     submit = SubmitField('Knock Knock!')
+
+    def __init__(self, expiration_choices=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.duration.choices = expiration_choices or [('1d','1 Day'),('1w','1 Week'),('1m','1 Month')]
 
 class AdminLoginForm(FlaskForm):
     admin_password = PasswordField('Admin Password', validators=[DataRequired()])
@@ -26,10 +25,9 @@ class RevokeForm(FlaskForm):
 
 class ExtendForm(FlaskForm):
     ip = HiddenField(validators=[DataRequired()])
-    duration = SelectField('Extend Duration', choices=[
-        ('1h', '1 Hour'),
-        ('1d', '1 Day'),
-        ('1w', '1 Week'),
-        ('1m', '1 Month')
-    ], validators=[DataRequired()])
+    duration = SelectField('Extend Duration', validators=[DataRequired()])
     submit = SubmitField('Extend')
+
+    def __init__(self, expiration_choices=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.duration.choices = expiration_choices or [('1d','1 Day'),('1w','1 Week'),('1m','1 Month')]    

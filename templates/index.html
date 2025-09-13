@@ -52,7 +52,11 @@
                 {% for ip, exp in user_ips %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     {{ ip }}
+                    {% if exp is none %}
+                    <span class="badge bg-secondary">never expires</span>
+                    {% else %}
                     <span class="badge bg-secondary">expires at {{ exp | localtime }}</span>
+                    {% endif %}
                 </li>
                 {% endfor %}
             </ul>
