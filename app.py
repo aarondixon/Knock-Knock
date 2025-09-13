@@ -25,6 +25,7 @@ import jwt
 import sqlite3
 import requests
 import ipaddress
+import re
 from requests.models import Response
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -93,6 +94,59 @@ logger = logging.getLogger(__name__)
 @login_manager.user_loader
 def load_user(user_id):
     return AdminUser(user_id) if user_id == 'admin' else None
+
+def parse_expiration_options(raw):
+    options = raw.split(',')
+
+    labels = {
+        'h': 'Hour',
+        'd': 'Day',
+        'w': 'Week',
+        'm': 'Month',
+        'y': 'Year',
+        'f': 'Forever'
+    }
+
+    choices = []
+    for opt in options:
+        if opt == '0f':
+            choices.append((opt, 'Forever'))
+            continue
+
+        match = re.match(r"(\d+)([hdwmyf])", opt)
+        if match:
+            num, unit = match.groups()
+            label = f"{num} {labels.get(unit, unit)}{'s' if int(num) > 1 else ''}"
+            choices.append((opt, label))
+    return choices
+
+EXPIRATION_OPTIONS = parse_expiration_options(os.environ.get('EXPIRATION_OPTIONS','1h,1d,1w,1m'))
+logger.info("EXPIRATION OPTIONS = %s", EXPIRATION_OPTIONS)
+
+# -------------------------------
+# Utility Functions
+# -------------------------------
+def get_expiration_delta(duration: str) -> timedelta:
+    """
+    Returns a timedelta based on a duration string
+    """
+    mapping = {
+        'h': lambda n: timedelta(hours=n),
+        'd': lambda n: timedelta(days=n),
+        'w': lambda n: timedelta(weeks=n),
+        'm': lambda n: timedelta(days=30 * n),
+        'y': lambda n: timedelta(days=365 * n),
+    }
+
+    if duration == '0f':
+        return None #timedelta(days=365 * 10) # 10 years
+    
+    match = re.match(r"(\d+)([hdwmy])", duration)
+    if match:
+        num, unit = int(match.group(1)), match.group(2)
+        return mapping.get(unit, lambda n: timedelta(days=1))(num)
+
+    return timedelta(days=1)
 
 # -------------------------------
 # Database Functions
@@ -265,26 +319,24 @@ def extend():
     """
     Extends the expiration time for a given IP based on selected duration.
     """
-    form = ExtendForm()
+    form = ExtendForm(expiration_choices=EXPIRATION_OPTIONS)
     if form.validate_on_submit():
         ip = form.ip.data
-        duration = request.form['duration']
-        delta = {
-            '1h': timedelta(hours=1),
-            '1d': timedelta(days=1),
-            '1w': timedelta(weeks=1),
-            '1m': timedelta(days=30)
-        }.get(duration, timedelta(days=1))  # default to 1 day if invalid
+        #duration = request.form['duration']
+        duration = form.duration.data
+        delta = get_expiration_delta(duration)
 
         conn = get_db()
         c = conn.cursor()
         c.execute("SELECT expiration FROM access_requests WHERE ip = ?", (ip,))
         row = c.fetchone()
 
+        new_exp = None
         if row:
-            current_exp = datetime.fromisoformat(row[0])
-            new_exp = current_exp + delta
-            c.execute("UPDATE access_requests SET expiration = ? WHERE ip = ?", (new_exp.isoformat(), ip))
+            if delta is not None:
+                current_exp = datetime.fromisoformat(row[0])
+                new_exp = (current_exp + delta).isoformat()
+            c.execute("UPDATE access_requests SET expiration = ? WHERE ip = ?", (new_exp, ip))
             conn.commit()
             flash(f"Access for IP {ip} extended by {duration}.", "success")
     else:
@@ -304,18 +356,16 @@ def index():
     ip = request.headers.get('Cf-Connecting-IP', request.remote_addr)
     is_ipv6 = ipaddress.ip_address(ip).version == 6
 
-    form = KnockForm()
+    form = KnockForm(expiration_choices=EXPIRATION_OPTIONS)
     admin_form = AdminLoginForm()
 
     if form.validate_on_submit():
         duration = form.duration.data
-        expiration_map = {
-            '1h': timedelta(hours=1),
-            '1d': timedelta(days=1),
-            '1w': timedelta(weeks=1),
-            '1m': timedelta(days=30)
-        }
-        expiration = datetime.now(timezone.utc) + expiration_map.get(duration, timedelta(days=1))
+        delta = get_expiration_delta(duration)
+        if delta is None:
+            expiration = None
+        else:
+            expiration = datetime.now(timezone.utc) + delta
 
         response, was_added = router.add_ip(ip)
 
@@ -348,7 +398,7 @@ def admin():
         return redirect('/')
     
     entries = get_all_entries()
-    return render_template('admin.html', entries=entries, revoke_form=RevokeForm(), extend_form=ExtendForm(), title=TITLE)
+    return render_template('admin.html', entries=entries, revoke_form=RevokeForm(), extend_form=ExtendForm(expiration_choices=EXPIRATION_OPTIONS), title=TITLE)
 
 # -------------------------------
 # Scheduler Setup
