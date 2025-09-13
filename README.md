@@ -53,7 +53,7 @@ These variables control how Knock-Knock interacts with your router and secures t
 | `UNIFI_SITE` | Site name in Unifi (usually `default`). |
 | `UNIFI_GROUP_ID` | Firewall group ID where IPs will be added. |
 | `TITLE` | Custom title for the web interface. |
-| `EXPIRATION_OPTIONS` | List of options to place in the expiration dropdown menu. Format: #a, where # is a quantity and u is the unit (d = day, w = week, m = month, y = year). 0f = forever. No spaces. Example: 3d,2w,1m,0f |
+| `EXPIRATION_OPTIONS` | List of options to place in the expiration dropdown menu. Format: #a, where # is a quantity and u is the unit (d = day, w = week, m = month, y = year). 0f = forever. No spaces. Examples: `3d,2w,1m,0f` or `1d,2d,1m,6m,1y` |
 
 You can set these in your `docker-compose.yml` or a `.env` file.
 
